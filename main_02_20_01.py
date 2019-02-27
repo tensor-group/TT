@@ -56,7 +56,7 @@ test_loader = torch.utils.data.DataLoader(
 #model = LSTM(28*28, 64, 10)
 #model = FC(28 * 28, 300, 100, 10)
 #model = TTRNN([4,7,4,7], [4,2,4,4], [1,3,4,2,1], 1, 0.8, 'ttgru')
-model = RNN([2,5,5,6], [4,2,4,4], [1,3,4,2,1],0.8,4)
+model = RNN([2,5,2,7], [4,2,4,4], [1,3,4,2,1],0.8,4)
 if args.cuda:
     model.cuda()
 optimizer = TorchOptim.Adam(model.parameters(), lr=args.lr)
