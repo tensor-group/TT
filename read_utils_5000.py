@@ -1,3 +1,4 @@
+import numpy as np
 def label2onehot(element):
     if element == '1':
         return [1,0,0,0,0]
@@ -17,10 +18,10 @@ def Return_train():
   for line in lines:
     line = line.split(',')
     label = line[0]
-    label = label2onehot(label)
+    label = np.array(label2onehot(label))
     train = line[1:]
-    train = [float(i) for i in train]
-    seqlen = len(train)
+    train = np.array([float(i) for i in train])
+    seqlen = np.array(len(train))
     alldata.append((train,label,seqlen))
     #sys.stdout.flush()
   #for i in alldata:
@@ -34,10 +35,10 @@ def Return_test():
   for line in lines:
     line = line.split(',')
     label = line[0]
-    label = label2onehot(label)
+    label = np.array(label2onehot(label))
     train = line[1:]
-    train = [float(i) for i in train]
-    seqlen = len(train)
+    train = np.array([float(i) for i in train])
+    seqlen = np.array(len(train))
     alldata.append((train,label,seqlen))
     #sys.stdout.flush()
   #for i in alldata:

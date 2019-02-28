@@ -1,5 +1,4 @@
 import torch
-import torchviz
 import argparse
 import DataUtils
 import torchvision
