@@ -1,15 +1,15 @@
 import numpy as np
 def label2onehot(element):
     if element == '1':
-        return [1,0,0,0,0]
+        return 0#[1,0,0,0,0]
     elif element == '2':
-        return [0,1,0,0,0]
+        return 1#[0,1,0,0,0]
     elif element == '3':
-        return [0,0,1,0,0]
+        return 2#[0,0,1,0,0]
     elif element == '4':
-        return [0,0,0,1,0]
+        return 3#[0,0,0,1,0]
     elif element == '5':
-        return [0,0,0,0,1]
+        return 4#[0,0,0,0,1]
 
 def Return_train():
   file = open("ECG5000_TRAIN")

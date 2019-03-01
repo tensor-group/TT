@@ -22,7 +22,7 @@ class RNN(nn.Module):
         self.fc = nn.Linear(out_sizes,num_classes).cuda()
         self.activ = nn.ReLU().cuda()
 
-    def forward(self, input, length=None):
+    def forward(self, input, lengths=None):
         # if length is None:
         #     length = input.size(1)
         # h_t = Variable(torch.zeros(input.size(0), self.hidden_size).cuda())
@@ -39,13 +39,16 @@ class RNN(nn.Module):
         # ot = self.activ(o)
         #if length is None:
         #    length = input.size(1)
-        outputs = []
-        for i in length: #length.shape=(batch_size, sequence_length)
-            for j in range(i.item()):
-                x = input[:, j, :].view(input.size(0), -1)
-                x = self.dropout(x)
-                out = self.ttcell(x)
-                outputs.append(out) 
+        sequence_length = input.size(1)
+        outputs = [] 
+        #一：batch里面，每一条数据长度统一，直接采用批处理法。
+        #二：batch里面，每一条数据长度不一，按最大长度补全后采用批处理法，在各条时间顶点处往后的时间点都采用零处理么？
+        #x = input[:, j, :].view(input.size(0), -1)
+        for cycle in range(sequence_length):
+            x = input[:,cycle,:].view(input.size(0), -1)
+            x = self.dropout(x)
+            out = self.ttcell(x)
+            outputs.append(out) 
         ot = self.fc(outputs[-1])
         ot = self.activ(ot)
         return ot

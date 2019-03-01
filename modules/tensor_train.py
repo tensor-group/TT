@@ -14,7 +14,7 @@ def create_tt_cores(in_modes, out_modes, ranks):
     weight = ParameterList(list_tt_cores)
     return weight
 
-def tt_dot(in_modes, out_modes, ranks, input, weight, bias=None) :
+def tt_dot(in_modes, out_modes, ranks, input, weight, bias=None):
     assert len(in_modes) == len(out_modes) == len(ranks)-1
     assert input.shape[1] == np.prod(in_modes)
     res = input
@@ -22,8 +22,10 @@ def tt_dot(in_modes, out_modes, ranks, input, weight, bias=None) :
     res = res.transpose(1, 0)
     res = res.contiguous()
     dim = len(in_modes)
+    #print('res: ',res.shape)
     for ii in range(dim) :
         res = res.view(ranks[ii] * in_modes[ii], -1)
+        #print('weight: ',weight[ii].shape)
         res = torch.matmul(weight[ii], res)
         res = res.view(out_modes[ii], -1)
         res = res.transpose(1, 0)

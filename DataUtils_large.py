@@ -1,7 +1,7 @@
 import torch
 import numpy as np
 from torchvision import transforms, utils
-from read_utils_5000 import Return_train, Return_test
+from read_utils import readTrain, readTest
 from torch.utils.data import Dataset, DataLoader
 
 
@@ -11,12 +11,9 @@ class ECGDataset(Dataset):
         self.isTrain = train
         self.isTest = test
         if self.isTrain:
-            #self.train = readTrain(train_path, size, cover)
-            self.train = Return_train()
+            self.train = readTrain(train_path, size, cover)
         if self.isTest:
-            #self.test = readTest(test_path, size, cover)
-            self.test = Return_test()
-
+            self.test = readTest(test_path, size, cover)
     def __len__(self):
         if self.isTrain:
             return len(self.train)

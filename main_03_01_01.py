@@ -1,6 +1,6 @@
 import torch
 import argparse
-import DataUtils
+import DataUtils_large
 import torchvision
 import numpy as np
 import torch.nn as TorchNN
@@ -19,7 +19,7 @@ parser.add_argument('-train_batch_size', type=int, default=64, metavar='--train-
                     help='input batch size for training(default:64)')
 parser.add_argument('-test_batch_size', type=int, default=64, metavar='--test-batch',
                     help='input batch size for testing(default:1000)')
-parser.add_argument('-feature_size', type=int, default=140, metavar='--feature-size',
+parser.add_argument('-feature_size', type=int, default=300, metavar='--feature-size',
                     help='feature_size')
 parser.add_argument('-epochs', type=int, default=10, metavar='--epochs',
                     help='number of epoch to train(default:10)')
@@ -31,7 +31,7 @@ parser.add_argument('-no-cuda', action='store_true', default=False,
                     help='disables CUDA training')
 parser.add_argument('-seed', type=int, default=1, metavar='S',
                     help='random seed(default:1)')
-parser.add_argument('-log-interval', type=int, default=1, metavar='N',
+parser.add_argument('-log-interval', type=int, default=10, metavar='N',
                     help='how many batches to wait before logging training status')
 args = parser.parse_args()
 args.cuda = not args.no_cuda and torch.cuda.is_available()
@@ -41,13 +41,13 @@ if args.cuda:
 kwargs = {'num_workers': 3, 'pin_memory': True} if args.cuda else {}
 
 train_loader = torch.utils.data.DataLoader(
-    DataUtils.ECGDataset(train_path,test_path,train=True),
+    DataUtils_large.ECGDataset(train_path,test_path,train=True),
     batch_size=args.train_batch_size,
     drop_last=True,
     shuffle=True
 )
 test_loader = torch.utils.data.DataLoader(
-    DataUtils.ECGDataset(train_path,test_path,test=True),
+    DataUtils_large.ECGDataset(train_path,test_path,test=True),
     batch_size=args.test_batch_size,
     drop_last=True,
     shuffle=True
@@ -57,7 +57,7 @@ test_loader = torch.utils.data.DataLoader(
 #model = FC(28 * 28, 300, 100, 10)
 #model = TTRNN([4,7,4,7], [4,2,4,4], [1,3,4,2,1], 1, 0.8, 'ttgru')
 #model = RNN([2,5,2,7], [4,4,2,4], [1,2,5,3,1], 0.8, 5)
-model = RNN([2,5,2,7], [2,2,2,2], [1,2,2,2,1], 0.8, 5)
+model = RNN([3,5,2,5], [2,2,2,2], [1,2,2,2,1], 0.8, 4)
 if args.cuda:
     model.cuda()
 optimizer = TorchOptim.Adam(model.parameters(), lr=args.lr)
@@ -71,7 +71,7 @@ def train(epoch):
         if args.cuda:
             data, target = train.cuda(), target.cuda()
         #data, target = TorchAutograd.Variable(data), TorchAutograd.Variable(target)
-        output = model(data.view(args.train_batch_size, -1, args.feature_size).float(), lengths=sequence_length)
+        output = model(data.view(args.train_batch_size, -1, args.feature_size).float(), length=sequence_length)
         optimizer.zero_grad()
         #output = model(data.view(args.train_batch_size, -1))
         loss = TorchNNFun.cross_entropy(output, target)
@@ -97,7 +97,7 @@ def test():
         if args.cuda:
             data, target = train.cuda(), target.cuda()
         #data, target = TorchAutograd.Variable(data), TorchAutograd.Variable(target)
-        output = model(data.view(args.test_batch_size, -1, args.feature_size).float(), lengths=sequence_length)
+        output = model(data.view(args.test_batch_size, -1, args.feature_size).float(), length=sequence_length)
         #output = model(data.view(args.test_batch_size, -1))
         test_loss += TorchNNFun.cross_entropy(output,target).item()
         pred = output.data.max(1, keepdim=True)[1]
