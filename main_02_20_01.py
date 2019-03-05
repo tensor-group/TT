@@ -1,10 +1,11 @@
 import torch
+import logging
 import argparse
 import DataUtils
-import torchvision
+#import torchvision
 import numpy as np
 import torch.nn as TorchNN
-from Net import LSTM, FC, TTRNN
+#from Net import LSTM, FC, TTRNN
 from RNN import RNN
 import torch.optim as TorchOptim
 import torch.utils.data as TorchData
@@ -19,9 +20,9 @@ parser.add_argument('-train_batch_size', type=int, default=64, metavar='--train-
                     help='input batch size for training(default:64)')
 parser.add_argument('-test_batch_size', type=int, default=64, metavar='--test-batch',
                     help='input batch size for testing(default:1000)')
-parser.add_argument('-feature_size', type=int, default=140, metavar='--feature-size',
+parser.add_argument('-feature_size', type=int, default=10, metavar='--feature-size',
                     help='feature_size')
-parser.add_argument('-epochs', type=int, default=10, metavar='--epochs',
+parser.add_argument('-epochs', type=int, default=100, metavar='--epochs',
                     help='number of epoch to train(default:10)')
 parser.add_argument('-lr', type=float, default=0.01, metavar='--learning-rate',
                     help='learning rate(default:0.01)')
@@ -57,7 +58,7 @@ test_loader = torch.utils.data.DataLoader(
 #model = FC(28 * 28, 300, 100, 10)
 #model = TTRNN([4,7,4,7], [4,2,4,4], [1,3,4,2,1], 1, 0.8, 'ttgru')
 #model = RNN([2,5,2,7], [4,4,2,4], [1,2,5,3,1], 0.8, 5)
-model = RNN([2,5,2,7], [2,2,2,2], [1,2,2,2,1], 0.8, 5)
+model = RNN([1,5,2,1], [2,2,2,2], [1,2,2,2,1], 0.8, 5)
 if args.cuda:
     model.cuda()
 optimizer = TorchOptim.Adam(model.parameters(), lr=args.lr)
@@ -67,7 +68,7 @@ def train(epoch):
     for step, data in enumerate(train_loader):
         train = data[0]
         target = data[1].type(torch.LongTensor)
-        sequence_length = args.feature_size / data[2]
+        sequence_length = data[2] / args.feature_size 
         if args.cuda:
             data, target = train.cuda(), target.cuda()
         #data, target = TorchAutograd.Variable(data), TorchAutograd.Variable(target)
@@ -81,9 +82,11 @@ def train(epoch):
         #model.getGradW_f()
         optimizer.step()
         if step % args.log_interval == 0:
-            print('Train Epoch: {} [{}/{} ({:.0f}%)]\tLoss: {:.6f}\tAccuracy: ({:.0f}%)\n'.format(
-                epoch, (step+1) * len(data), len(train_loader.dataset),
-                       100. * step / len(train_loader), loss.item(),100. * correct / args.train_batch_size))
+            logging.info('Train Epoch: {} [{}/{} ({:.0f}%)]\tLoss: {:.6f}\tAccuracy: ({:.0f}%)\n'.format(
+                epoch, (step+1) * len(data), len(train_loader.dataset), 100. * step / len(train_loader), loss.item(), 100. * correct / args.train_batch_size))
+            #print('Train Epoch: {} [{}/{} ({:.0f}%)]\tLoss: {:.6f}\tAccuracy: ({:.0f}%)\n'.format(
+            #    epoch, (step+1) * len(data), len(train_loader.dataset),
+            #           100. * step / len(train_loader), loss.item(),100. * correct / args.train_batch_size))
 def test():
     model.eval()
     test_loss = 0
@@ -93,7 +96,7 @@ def test():
             break
         train = data[0]
         target = data[1].type(torch.LongTensor)
-        sequence_length = args.feature_size / data[2]
+        sequence_length = data[2] / args.feature_size 
         if args.cuda:
             data, target = train.cuda(), target.cuda()
         #data, target = TorchAutograd.Variable(data), TorchAutograd.Variable(target)
@@ -103,9 +106,16 @@ def test():
         pred = output.data.max(1, keepdim=True)[1]
         correct = pred.eq(target.data.view_as(pred)).cpu().sum()
     test_loss /= len(test_loader.dataset)
-    print('\nTest set: Average loss: {:.4f}, Accuracy: {}/{} ({:.0f}%)\n'.format(
-        test_loss, correct, args.test_batch_size,
-        100. * correct / args.test_batch_size))
+    logging.info('\nTest set: Average loss: {:.4f}, Accuracy: {}/{} ({:.0f}%)\n'.format(
+                 test_loss, correct, args.test_batch_size, 100. * correct / args.test_batch_size))
+    #print('\nTest set: Average loss: {:.4f}, Accuracy: {}/{} ({:.0f}%)\n'.format(
+    #    test_loss, correct, args.test_batch_size,
+    #    100. * correct / args.test_batch_size))
+def log():
+    logging.basicConfig(level=logging.INFO,
+                        filename="result.log",
+                        filemode="a",
+                        format="%(asctime)s:%(message)s")
 
 def run():
     torch.multiprocessing.freeze_support()
@@ -113,6 +123,7 @@ def run():
 
 if __name__ == '__main__':
     run()
+    log()
     for epoch in range(1, args.epochs + 1):
         train(epoch)
         test()

@@ -67,7 +67,7 @@ def train(epoch):
     for step, data in enumerate(train_loader):
         train = data[0]
         target = data[1].type(torch.LongTensor)
-        sequence_length = args.feature_size / data[2]
+        sequence_length = data[2] / args.feature_size 
         if args.cuda:
             data, target = train.cuda(), target.cuda()
         #data, target = TorchAutograd.Variable(data), TorchAutograd.Variable(target)
@@ -93,7 +93,7 @@ def test():
             break
         train = data[0]
         target = data[1].type(torch.LongTensor)
-        sequence_length = args.feature_size / data[2]
+        sequence_length = data[2] / args.feature_size 
         if args.cuda:
             data, target = train.cuda(), target.cuda()
         #data, target = TorchAutograd.Variable(data), TorchAutograd.Variable(target)
